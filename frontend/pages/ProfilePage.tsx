@@ -43,6 +43,10 @@ export default function ProfilePage() {
 
   const { profile, skills, education, certificates, tools } = profileData;
 
+  // Separate skills by category
+  const generalSkills = skills.filter(skill => skill.category !== 'management');
+  const managementSkills = skills.filter(skill => skill.category === 'management');
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white">
       <div className="container mx-auto px-4 py-8">
@@ -54,7 +58,7 @@ export default function ProfilePage() {
                 <div className="text-center mb-6">
                   <div className="w-48 h-48 mx-auto mb-4 rounded-lg overflow-hidden bg-blue-600">
                     <img
-                      src="/api/placeholder/192/192"
+                      src={profile.photoUrl || "/api/placeholder/192/192"}
                       alt={profile.name}
                       className="w-full h-full object-cover"
                     />
@@ -79,42 +83,46 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Skills Section */}
-                <div className="mt-8">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Code className="w-5 h-5 text-teal-400" />
-                    <h2 className="text-xl font-semibold text-white">Skills</h2>
-                  </div>
-                  <div className="space-y-4">
-                    {skills.map((skill) => (
-                      <div key={skill.id}>
-                        <div className="flex justify-between mb-2">
-                          <span className="text-gray-300">{skill.name}</span>
-                          <span className="text-teal-400">{skill.percentage}%</span>
+                {generalSkills.length > 0 && (
+                  <div className="mt-8">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Code className="w-5 h-5 text-teal-400" />
+                      <h2 className="text-xl font-semibold text-white">Skills</h2>
+                    </div>
+                    <div className="space-y-4">
+                      {generalSkills.map((skill) => (
+                        <div key={skill.id}>
+                          <div className="flex justify-between mb-2">
+                            <span className="text-gray-300">{skill.name}</span>
+                            <span className="text-teal-400">{skill.percentage}%</span>
+                          </div>
+                          <Progress value={skill.percentage} className="h-2" />
                         </div>
-                        <Progress value={skill.percentage} className="h-2" />
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Programming Languages */}
-                <div className="mt-8">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Code className="w-5 h-5 text-teal-400" />
-                    <h2 className="text-xl font-semibold text-white">Programming Language</h2>
-                  </div>
-                  <div className="space-y-4">
-                    {skills.filter(skill => skill.category === 'language').map((skill) => (
-                      <div key={skill.id}>
-                        <div className="flex justify-between mb-2">
-                          <span className="text-gray-300">{skill.name}</span>
-                          <span className="text-teal-400">{skill.percentage}%</span>
+                {/* Management Skills */}
+                {managementSkills.length > 0 && (
+                  <div className="mt-8">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Code className="w-5 h-5 text-teal-400" />
+                      <h2 className="text-xl font-semibold text-white">Manajemen SDM</h2>
+                    </div>
+                    <div className="space-y-4">
+                      {managementSkills.map((skill) => (
+                        <div key={skill.id}>
+                          <div className="flex justify-between mb-2">
+                            <span className="text-gray-300">{skill.name}</span>
+                            <span className="text-teal-400">{skill.percentage}%</span>
+                          </div>
+                          <Progress value={skill.percentage} className="h-2" />
                         </div>
-                        <Progress value={skill.percentage} className="h-2" />
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           </div>

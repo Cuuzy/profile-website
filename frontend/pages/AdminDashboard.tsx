@@ -7,13 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogOut, User, Code, GraduationCap, Award, Wrench } from 'lucide-react';
+import { LogOut, User, Code, GraduationCap, Award, Wrench, Camera } from 'lucide-react';
 import backend from '~backend/client';
 import type { ProfileData } from '~backend/profile/get_profile';
 
 export default function AdminDashboard() {
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [photoUploading, setPhotoUploading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -61,6 +62,76 @@ export default function AdminDashboard() {
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
     navigate('/admin');
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Error",
+        description: "Please select an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Error",
+        description: "Image size must be less than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setPhotoUploading(true);
+
+    try {
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const base64Data = reader.result as string;
+          const response = await backend.profile.uploadPhoto({
+            photoData: base64Data,
+            fileName: file.name,
+          });
+
+          if (response.success) {
+            toast({
+              title: "Success",
+              description: "Profile photo updated successfully",
+            });
+
+            // Refresh profile data
+            const data = await backend.profile.getProfile();
+            setProfileData(data);
+          }
+        } catch (error) {
+          console.error('Failed to upload photo:', error);
+          toast({
+            title: "Error",
+            description: "Failed to upload photo",
+            variant: "destructive",
+          });
+        } finally {
+          setPhotoUploading(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Failed to process file:', error);
+      toast({
+        title: "Error",
+        description: "Failed to process file",
+        variant: "destructive",
+      });
+      setPhotoUploading(false);
+    }
   };
 
   const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -307,69 +378,109 @@ export default function AdminDashboard() {
           </TabsList>
 
           <TabsContent value="profile">
-            <Card className="bg-gray-800/50 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white">Edit Profile</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleUpdateProfile} className="space-y-4">
-                  <div>
-                    <Label htmlFor="name" className="text-gray-300">Name</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      defaultValue={profileData.profile.name}
-                      className="bg-gray-700 border-gray-600 text-white"
-                      required
-                    />
+            <div className="space-y-6">
+              {/* Photo Upload Section */}
+              <Card className="bg-gray-800/50 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Camera className="w-5 h-5" />
+                    Profile Photo
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-6">
+                    <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-600">
+                      <img
+                        src={profileData.profile.photoUrl || "/api/placeholder/96/96"}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="photo-upload" className="text-gray-300 block mb-2">
+                        Upload New Photo
+                      </Label>
+                      <Input
+                        id="photo-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
+                        disabled={photoUploading}
+                        className="bg-gray-700 border-gray-600 text-white file:bg-teal-600 file:text-white file:border-0 file:rounded file:px-3 file:py-1"
+                      />
+                      <p className="text-gray-400 text-sm mt-1">
+                        {photoUploading ? "Uploading..." : "Max size: 5MB. Formats: JPG, PNG, GIF"}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="title" className="text-gray-300">Title</Label>
-                    <Input
-                      id="title"
-                      name="title"
-                      defaultValue={profileData.profile.title}
-                      className="bg-gray-700 border-gray-600 text-white"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="location" className="text-gray-300">Location</Label>
-                    <Input
-                      id="location"
-                      name="location"
-                      defaultValue={profileData.profile.location}
-                      className="bg-gray-700 border-gray-600 text-white"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email" className="text-gray-300">Email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      defaultValue={profileData.profile.email}
-                      className="bg-gray-700 border-gray-600 text-white"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone" className="text-gray-300">Phone</Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      defaultValue={profileData.profile.phone}
-                      className="bg-gray-700 border-gray-600 text-white"
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
-                    Update Profile
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+
+              {/* Profile Info Section */}
+              <Card className="bg-gray-800/50 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white">Edit Profile Information</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleUpdateProfile} className="space-y-4">
+                    <div>
+                      <Label htmlFor="name" className="text-gray-300">Name</Label>
+                      <Input
+                        id="name"
+                        name="name"
+                        defaultValue={profileData.profile.name}
+                        className="bg-gray-700 border-gray-600 text-white"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="title" className="text-gray-300">Title</Label>
+                      <Input
+                        id="title"
+                        name="title"
+                        defaultValue={profileData.profile.title}
+                        className="bg-gray-700 border-gray-600 text-white"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="location" className="text-gray-300">Location</Label>
+                      <Input
+                        id="location"
+                        name="location"
+                        defaultValue={profileData.profile.location}
+                        className="bg-gray-700 border-gray-600 text-white"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="email" className="text-gray-300">Email</Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        defaultValue={profileData.profile.email}
+                        className="bg-gray-700 border-gray-600 text-white"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="phone" className="text-gray-300">Phone</Label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        defaultValue={profileData.profile.phone}
+                        className="bg-gray-700 border-gray-600 text-white"
+                        required
+                      />
+                    </div>
+                    <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
+                      Update Profile
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="skills">
@@ -403,13 +514,20 @@ export default function AdminDashboard() {
                     </div>
                     <div>
                       <Label htmlFor="skillCategory" className="text-gray-300">Category</Label>
-                      <Input
+                      <select
                         id="skillCategory"
                         name="skillCategory"
-                        defaultValue="general"
-                        className="bg-gray-700 border-gray-600 text-white"
+                        className="w-full bg-gray-700 border border-gray-600 text-white rounded-md px-3 py-2"
                         required
-                      />
+                      >
+                        <option value="general">General Skills</option>
+                        <option value="programming">Programming</option>
+                        <option value="design">Design</option>
+                        <option value="technical">Technical</option>
+                        <option value="marketing">Marketing</option>
+                        <option value="productivity">Productivity</option>
+                        <option value="management">Manajemen SDM</option>
+                      </select>
                     </div>
                     <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
                       Add Skill
@@ -428,7 +546,7 @@ export default function AdminDashboard() {
                       <div key={skill.id} className="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg">
                         <div>
                           <h3 className="font-semibold text-white">{skill.name}</h3>
-                          <p className="text-gray-400">{skill.percentage}% - {skill.category}</p>
+                          <p className="text-gray-400">{skill.percentage}% - {skill.category === 'management' ? 'Manajemen SDM' : skill.category}</p>
                         </div>
                         <Button
                           onClick={() => handleDeleteSkill(skill.id)}
