@@ -1,0 +1,99 @@
+import { api } from "encore.dev/api";
+import { profileDB } from "./db";
+
+export interface Profile {
+  id: number;
+  name: string;
+  title: string;
+  location: string;
+  email: string;
+  phone: string;
+  photoUrl?: string;
+}
+
+export interface Skill {
+  id: number;
+  name: string;
+  percentage: number;
+  category: string;
+}
+
+export interface Education {
+  id: number;
+  institution: string;
+  location: string;
+  startYear: number;
+  endYear: number;
+}
+
+export interface Certificate {
+  id: number;
+  title: string;
+  issuer: string;
+  description?: string;
+  issueDate: string;
+  imageUrl?: string;
+}
+
+export interface Tool {
+  id: number;
+  name: string;
+  iconUrl?: string;
+}
+
+export interface ProfileData {
+  profile: Profile;
+  skills: Skill[];
+  education: Education[];
+  certificates: Certificate[];
+  tools: Tool[];
+}
+
+// Gets the complete profile data
+export const getProfile = api<void, ProfileData>(
+  { expose: true, method: "GET", path: "/profile" },
+  async () => {
+    const profile = await profileDB.queryRow<Profile>`
+      SELECT id, name, title, location, email, phone, photo_url as "photoUrl"
+      FROM profiles 
+      ORDER BY id DESC 
+      LIMIT 1
+    `;
+
+    if (!profile) {
+      throw new Error("Profile not found");
+    }
+
+    const skills = await profileDB.queryAll<Skill>`
+      SELECT id, name, percentage, category
+      FROM skills 
+      ORDER BY percentage DESC
+    `;
+
+    const education = await profileDB.queryAll<Education>`
+      SELECT id, institution, location, start_year as "startYear", end_year as "endYear"
+      FROM education 
+      ORDER BY start_year DESC
+    `;
+
+    const certificates = await profileDB.queryAll<Certificate>`
+      SELECT id, title, issuer, description, issue_date as "issueDate", image_url as "imageUrl"
+      FROM certificates 
+      ORDER BY id DESC
+    `;
+
+    const tools = await profileDB.queryAll<Tool>`
+      SELECT id, name, icon_url as "iconUrl"
+      FROM tools 
+      ORDER BY name
+    `;
+
+    return {
+      profile,
+      skills,
+      education,
+      certificates,
+      tools,
+    };
+  }
+);
