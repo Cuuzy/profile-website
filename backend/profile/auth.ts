@@ -19,27 +19,30 @@ export interface VerifyTokenResponse {
   valid: boolean;
 }
 
-// Simple admin login (in production, use proper password hashing)
+// Simple admin login using fixed credentials
+// username: ito, password: ito31102002
 export const login = api<LoginRequest, LoginResponse>(
   { expose: true, method: "POST", path: "/admin/login" },
   async (req) => {
-    const admin = await profileDB.queryRow<{ id: number; username: string; password_hash: string }>`
-      SELECT id, username, password_hash
-      FROM admins 
-      WHERE username = ${req.username}
+    const { username, password } = req;
+
+    // Validate credentials
+    if (username !== "ito" || password !== "ito31102002") {
+      throw APIError.unauthenticated("Invalid credentials");
+    }
+
+    // Ensure admin exists in DB (idempotent upsert-like)
+    const existing = await profileDB.queryRow<{ id: number }>`
+      SELECT id FROM admins WHERE username = ${username}
     `;
-
-    if (!admin) {
-      throw APIError.unauthenticated("Invalid credentials");
+    if (!existing) {
+      await profileDB.exec`
+        INSERT INTO admins (username, password_hash) VALUES (${username}, 'fixed-credential-login')
+      `;
     }
 
-    // Simple password check (in production, use bcrypt)
-    if (req.password !== "admin123") {
-      throw APIError.unauthenticated("Invalid credentials");
-    }
-
-    // Simple token generation (in production, use JWT)
-    const token = Buffer.from(`${admin.username}:${Date.now()}`).toString('base64');
+    // Generate a simple time-bound token (base64 "username:timestamp")
+    const token = Buffer.from(`${username}:${Date.now()}`).toString("base64");
 
     return {
       success: true,
@@ -53,13 +56,17 @@ export const verifyToken = api<VerifyTokenRequest, VerifyTokenResponse>(
   { expose: true, method: "POST", path: "/admin/verify" },
   async (req) => {
     try {
-      const decoded = Buffer.from(req.token, 'base64').toString();
-      const [username, timestamp] = decoded.split(':');
-      
+      const decoded = Buffer.from(req.token, "base64").toString();
+      const [username, timestamp] = decoded.split(":");
+
+      if (username !== "ito") {
+        return { valid: false };
+      }
+
       // Check if token is not older than 24 hours
       const tokenTime = parseInt(timestamp);
       const now = Date.now();
-      const isValid = (now - tokenTime) < (24 * 60 * 60 * 1000);
+      const isValid = now - tokenTime < 24 * 60 * 60 * 1000;
 
       return { valid: isValid };
     } catch {
