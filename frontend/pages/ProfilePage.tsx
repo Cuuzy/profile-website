@@ -56,11 +56,12 @@ export default function ProfilePage() {
             <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="text-center mb-6">
-                  <div className="w-48 h-48 mx-auto mb-4 rounded-lg overflow-hidden bg-blue-600">
+                  <div className="w-48 h-48 mx-auto mb-4 rounded-lg overflow-hidden bg-blue-600 border-2 border-teal-600/30">
                     <img
                       src={profile.photoUrl || "/api/placeholder/192/192"}
                       alt={profile.name}
                       className="w-full h-full object-cover"
+                      style={{ imageRendering: 'crisp-edges' }}
                     />
                   </div>
                   <h1 className="text-2xl font-bold text-white mb-2">{profile.name}</h1>

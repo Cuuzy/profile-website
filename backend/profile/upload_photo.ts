@@ -16,7 +16,7 @@ export interface UploadPhotoResponse {
   photoUrl: string;
 }
 
-// Uploads a new profile photo
+// Uploads a new profile photo with higher quality support
 export const uploadPhoto = api<UploadPhotoRequest, UploadPhotoResponse>(
   { expose: true, method: "POST", path: "/profile/photo" },
   async (req) => {
@@ -24,14 +24,33 @@ export const uploadPhoto = api<UploadPhotoRequest, UploadPhotoResponse>(
     const base64Data = req.photoData.replace(/^data:image\/[a-z]+;base64,/, "");
     const buffer = Buffer.from(base64Data, "base64");
     
-    // Generate unique filename
-    const timestamp = Date.now();
-    const extension = req.fileName.split('.').pop() || 'jpg';
-    const uniqueFileName = `profile-${timestamp}.${extension}`;
+    // Validate file size (max 10MB for HD quality)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (buffer.length > maxSize) {
+      throw new Error("File size exceeds 10MB limit");
+    }
     
-    // Upload to bucket
+    // Generate unique filename with timestamp
+    const timestamp = Date.now();
+    const extension = req.fileName.split('.').pop()?.toLowerCase() || 'jpg';
+    
+    // Ensure we support common image formats
+    const supportedFormats = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    if (!supportedFormats.includes(extension)) {
+      throw new Error("Unsupported file format. Please use JPG, PNG, GIF, or WebP");
+    }
+    
+    const uniqueFileName = `profile-hd-${timestamp}.${extension}`;
+    
+    // Determine content type
+    let contentType = `image/${extension}`;
+    if (extension === 'jpg') {
+      contentType = 'image/jpeg';
+    }
+    
+    // Upload to bucket with optimized settings for HD images
     await profilePhotos.upload(uniqueFileName, buffer, {
-      contentType: `image/${extension}`,
+      contentType: contentType,
     });
     
     // Get public URL

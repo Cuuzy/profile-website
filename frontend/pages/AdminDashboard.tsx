@@ -78,11 +78,23 @@ export default function AdminDashboard() {
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Validate file size (max 10MB for HD quality)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
       toast({
         title: "Error",
-        description: "Image size must be less than 5MB",
+        description: "Image size must be less than 10MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check for supported formats
+    const supportedFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!supportedFormats.includes(file.type.toLowerCase())) {
+      toast({
+        title: "Error",
+        description: "Please use JPG, PNG, GIF, or WebP format for best quality",
         variant: "destructive",
       });
       return;
@@ -104,7 +116,7 @@ export default function AdminDashboard() {
           if (response.success) {
             toast({
               title: "Success",
-              description: "Profile photo updated successfully",
+              description: "HD profile photo updated successfully",
             });
 
             // Refresh profile data
@@ -115,7 +127,7 @@ export default function AdminDashboard() {
           console.error('Failed to upload photo:', error);
           toast({
             title: "Error",
-            description: "Failed to upload photo",
+            description: "Failed to upload photo. Please try again.",
             variant: "destructive",
           });
         } finally {
@@ -384,33 +396,41 @@ export default function AdminDashboard() {
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <Camera className="w-5 h-5" />
-                    Profile Photo
+                    Profile Photo (HD Quality)
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-6">
-                    <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-600">
+                    <div className="w-32 h-32 rounded-lg overflow-hidden bg-gray-600 border-2 border-teal-600/30">
                       <img
-                        src={profileData.profile.photoUrl || "/api/placeholder/96/96"}
+                        src={profileData.profile.photoUrl || "/api/placeholder/128/128"}
                         alt="Profile"
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <Label htmlFor="photo-upload" className="text-gray-300 block mb-2">
-                        Upload New Photo
+                        Upload HD Photo
                       </Label>
                       <Input
                         id="photo-upload"
                         type="file"
-                        accept="image/*"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                         onChange={handlePhotoUpload}
                         disabled={photoUploading}
-                        className="bg-gray-700 border-gray-600 text-white file:bg-teal-600 file:text-white file:border-0 file:rounded file:px-3 file:py-1"
+                        className="bg-gray-700 border-gray-600 text-white file:bg-teal-600 file:text-white file:border-0 file:rounded file:px-3 file:py-1 file:mr-3"
                       />
-                      <p className="text-gray-400 text-sm mt-1">
-                        {photoUploading ? "Uploading..." : "Max size: 5MB. Formats: JPG, PNG, GIF"}
-                      </p>
+                      <div className="mt-2 space-y-1">
+                        <p className="text-gray-400 text-sm">
+                          {photoUploading ? "Uploading HD photo..." : "Max size: 10MB for HD quality"}
+                        </p>
+                        <p className="text-gray-500 text-xs">
+                          Supported formats: JPG, PNG, GIF, WebP
+                        </p>
+                        <p className="text-teal-400 text-xs">
+                          💡 Tip: Use high resolution images (1080p or higher) for best quality
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
