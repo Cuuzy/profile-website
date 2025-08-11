@@ -47,9 +47,9 @@ export default function AdminDashboard() {
       } catch (error) {
         console.error('Failed to fetch profile:', error);
         toast({
-          title: "Error",
-          description: "Failed to load profile data",
-          variant: "destructive",
+          title: 'Error',
+          description: 'Failed to load profile data',
+          variant: 'destructive'
         });
       } finally {
         setLoading(false);
@@ -68,34 +68,31 @@ export default function AdminDashboard() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
-        title: "Error",
-        description: "Please select an image file",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Please select an image file',
+        variant: 'destructive'
       });
       return;
     }
 
-    // Validate file size (max 10MB for HD quality)
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
       toast({
-        title: "Error",
-        description: "Image size must be less than 10MB",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Image size must be less than 10MB',
+        variant: 'destructive'
       });
       return;
     }
 
-    // Check for supported formats
     const supportedFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     if (!supportedFormats.includes(file.type.toLowerCase())) {
       toast({
-        title: "Error",
-        description: "Please use JPG, PNG, GIF, or WebP format for best quality",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Please use JPG, PNG, GIF, or WebP format for best quality',
+        variant: 'destructive'
       });
       return;
     }
@@ -103,32 +100,30 @@ export default function AdminDashboard() {
     setPhotoUploading(true);
 
     try {
-      // Convert file to base64
       const reader = new FileReader();
       reader.onload = async () => {
         try {
           const base64Data = reader.result as string;
           const response = await backend.profile.uploadPhoto({
             photoData: base64Data,
-            fileName: file.name,
+            fileName: file.name
           });
 
           if (response.success) {
             toast({
-              title: "Success",
-              description: "HD profile photo updated successfully",
+              title: 'Success',
+              description: 'HD profile photo updated successfully'
             });
 
-            // Refresh profile data
             const data = await backend.profile.getProfile();
             setProfileData(data);
           }
         } catch (error) {
           console.error('Failed to upload photo:', error);
           toast({
-            title: "Error",
-            description: "Failed to upload photo. Please try again.",
-            variant: "destructive",
+            title: 'Error',
+            description: 'Failed to upload photo. Please try again.',
+            variant: 'destructive'
           });
         } finally {
           setPhotoUploading(false);
@@ -138,9 +133,9 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error('Failed to process file:', error);
       toast({
-        title: "Error",
-        description: "Failed to process file",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to process file',
+        variant: 'destructive'
       });
       setPhotoUploading(false);
     }
@@ -149,30 +144,29 @@ export default function AdminDashboard() {
   const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+
     try {
       await backend.profile.updateProfile({
         name: formData.get('name') as string,
         title: formData.get('title') as string,
         location: formData.get('location') as string,
         email: formData.get('email') as string,
-        phone: formData.get('phone') as string,
+        phone: formData.get('phone') as string
       });
 
       toast({
-        title: "Success",
-        description: "Profile updated successfully",
+        title: 'Success',
+        description: 'Profile updated successfully'
       });
 
-      // Refresh data
       const data = await backend.profile.getProfile();
       setProfileData(data);
     } catch (error) {
       console.error('Failed to update profile:', error);
       toast({
-        title: "Error",
-        description: "Failed to update profile",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to update profile',
+        variant: 'destructive'
       });
     }
   };
@@ -180,31 +174,29 @@ export default function AdminDashboard() {
   const handleCreateSkill = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+
     try {
       await backend.profile.createSkill({
         name: formData.get('skillName') as string,
         percentage: parseInt(formData.get('skillPercentage') as string),
-        category: formData.get('skillCategory') as string,
+        category: formData.get('skillCategory') as string
       });
 
       toast({
-        title: "Success",
-        description: "Skill added successfully",
+        title: 'Success',
+        description: 'Skill added successfully'
       });
 
-      // Refresh data
       const data = await backend.profile.getProfile();
       setProfileData(data);
-      
-      // Reset form
+
       e.currentTarget.reset();
     } catch (error) {
       console.error('Failed to create skill:', error);
       toast({
-        title: "Error",
-        description: "Failed to add skill",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to add skill',
+        variant: 'destructive'
       });
     }
   };
@@ -213,19 +205,18 @@ export default function AdminDashboard() {
     try {
       await backend.profile.deleteSkill({ id });
       toast({
-        title: "Success",
-        description: "Skill deleted successfully",
+        title: 'Success',
+        description: 'Skill deleted successfully'
       });
 
-      // Refresh data
       const data = await backend.profile.getProfile();
       setProfileData(data);
     } catch (error) {
       console.error('Failed to delete skill:', error);
       toast({
-        title: "Error",
-        description: "Failed to delete skill",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to delete skill',
+        variant: 'destructive'
       });
     }
   };
@@ -238,27 +229,27 @@ export default function AdminDashboard() {
         institution: fd.get('institution') as string,
         location: fd.get('eduLocation') as string,
         startYear: parseInt(fd.get('startYear') as string),
-        endYear: parseInt(fd.get('endYear') as string),
+        endYear: parseInt(fd.get('endYear') as string)
       });
-      toast({ title: "Success", description: "Education added" });
+      toast({ title: 'Success', description: 'Education added' });
       const data = await backend.profile.getProfile();
       setProfileData(data);
       e.currentTarget.reset();
     } catch (err) {
       console.error('Failed to add education:', err);
-      toast({ title: "Error", description: "Failed to add education", variant: "destructive" });
+      toast({ title: 'Error', description: 'Failed to add education', variant: 'destructive' });
     }
   };
 
   const handleDeleteEducation = async (id: number) => {
     try {
       await backend.profile.deleteEducation({ id });
-      toast({ title: "Success", description: "Education deleted" });
+      toast({ title: 'Success', description: 'Education deleted' });
       const data = await backend.profile.getProfile();
       setProfileData(data);
     } catch (err) {
       console.error('Failed to delete education:', err);
-      toast({ title: "Error", description: "Failed to delete education", variant: "destructive" });
+      toast({ title: 'Error', description: 'Failed to delete education', variant: 'destructive' });
     }
   };
 
@@ -271,27 +262,27 @@ export default function AdminDashboard() {
         issuer: fd.get('certIssuer') as string,
         description: (fd.get('certDescription') as string) || undefined,
         issueDate: fd.get('certIssueDate') as string,
-        imageUrl: (fd.get('certImageUrl') as string) || undefined,
+        imageUrl: (fd.get('certImageUrl') as string) || undefined
       });
-      toast({ title: "Success", description: "Certificate added" });
+      toast({ title: 'Success', description: 'Certificate added' });
       const data = await backend.profile.getProfile();
       setProfileData(data);
       e.currentTarget.reset();
     } catch (err) {
       console.error('Failed to add certificate:', err);
-      toast({ title: "Error", description: "Failed to add certificate", variant: "destructive" });
+      toast({ title: 'Error', description: 'Failed to add certificate', variant: 'destructive' });
     }
   };
 
   const handleDeleteCertificate = async (id: number) => {
     try {
       await backend.profile.deleteCertificate({ id });
-      toast({ title: "Success", description: "Certificate deleted" });
+      toast({ title: 'Success', description: 'Certificate deleted' });
       const data = await backend.profile.getProfile();
       setProfileData(data);
     } catch (err) {
       console.error('Failed to delete certificate:', err);
-      toast({ title: "Error", description: "Failed to delete certificate", variant: "destructive" });
+      toast({ title: 'Error', description: 'Failed to delete certificate', variant: 'destructive' });
     }
   };
 
@@ -301,27 +292,27 @@ export default function AdminDashboard() {
     try {
       await backend.profile.createTool({
         name: fd.get('toolName') as string,
-        iconUrl: (fd.get('toolIconUrl') as string) || undefined,
+        iconUrl: (fd.get('toolIconUrl') as string) || undefined
       });
-      toast({ title: "Success", description: "Tool added" });
+      toast({ title: 'Success', description: 'Tool added' });
       const data = await backend.profile.getProfile();
       setProfileData(data);
       e.currentTarget.reset();
     } catch (err) {
       console.error('Failed to add tool:', err);
-      toast({ title: "Error", description: "Failed to add tool", variant: "destructive" });
+      toast({ title: 'Error', description: 'Failed to add tool', variant: 'destructive' });
     }
   };
 
   const handleDeleteTool = async (id: number) => {
     try {
       await backend.profile.deleteTool({ id });
-      toast({ title: "Success", description: "Tool deleted" });
+      toast({ title: 'Success', description: 'Tool deleted' });
       const data = await backend.profile.getProfile();
       setProfileData(data);
     } catch (err) {
       console.error('Failed to delete tool:', err);
-      toast({ title: "Error", description: "Failed to delete tool", variant: "destructive" });
+      toast({ title: 'Error', description: 'Failed to delete tool', variant: 'destructive' });
     }
   };
 
@@ -401,12 +392,16 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-6">
-                    <div className="w-32 h-32 rounded-lg overflow-hidden bg-gray-600 border-2 border-teal-600/30">
-                      <img
-                        src={profileData.profile.photoUrl || "/api/placeholder/128/128"}
-                        alt="Profile"
-                        className="w-full h-full object-cover"
-                      />
+                    <div className="relative">
+                      <div className="absolute -inset-[1px] rounded-lg bg-gradient-to-br from-teal-500/30 to-blue-500/20 blur-sm opacity-70"></div>
+                      <div className="relative w-32 h-32 rounded-lg overflow-hidden ring-1 ring-white/10 bg-gray-700">
+                        <img
+                          src={profileData.profile.photoUrl || '/api/placeholder/128/128'}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
+                      </div>
                     </div>
                     <div className="flex-1">
                       <Label htmlFor="photo-upload" className="text-gray-300 block mb-2">
@@ -422,14 +417,10 @@ export default function AdminDashboard() {
                       />
                       <div className="mt-2 space-y-1">
                         <p className="text-gray-400 text-sm">
-                          {photoUploading ? "Uploading HD photo..." : "Max size: 10MB for HD quality"}
+                          {photoUploading ? 'Uploading HD photo...' : 'Max size: 10MB for HD quality'}
                         </p>
-                        <p className="text-gray-500 text-xs">
-                          Supported formats: JPG, PNG, GIF, WebP
-                        </p>
-                        <p className="text-teal-400 text-xs">
-                          💡 Tip: Use high resolution images (1080p or higher) for best quality
-                        </p>
+                        <p className="text-gray-500 text-xs">Supported formats: JPG, PNG, GIF, WebP</p>
+                        <p className="text-teal-400 text-xs">Tip: Use 1080p+ images for best clarity</p>
                       </div>
                     </div>
                   </div>
@@ -444,7 +435,9 @@ export default function AdminDashboard() {
                 <CardContent>
                   <form onSubmit={handleUpdateProfile} className="space-y-4">
                     <div>
-                      <Label htmlFor="name" className="text-gray-300">Name</Label>
+                      <Label htmlFor="name" className="text-gray-300">
+                        Name
+                      </Label>
                       <Input
                         id="name"
                         name="name"
@@ -454,7 +447,9 @@ export default function AdminDashboard() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="title" className="text-gray-300">Title</Label>
+                      <Label htmlFor="title" className="text-gray-300">
+                        Title
+                      </Label>
                       <Input
                         id="title"
                         name="title"
@@ -464,7 +459,9 @@ export default function AdminDashboard() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="location" className="text-gray-300">Location</Label>
+                      <Label htmlFor="location" className="text-gray-300">
+                        Location
+                      </Label>
                       <Input
                         id="location"
                         name="location"
@@ -474,7 +471,9 @@ export default function AdminDashboard() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="email" className="text-gray-300">Email</Label>
+                      <Label htmlFor="email" className="text-gray-300">
+                        Email
+                      </Label>
                       <Input
                         id="email"
                         name="email"
@@ -485,7 +484,9 @@ export default function AdminDashboard() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="phone" className="text-gray-300">Phone</Label>
+                      <Label htmlFor="phone" className="text-gray-300">
+                        Phone
+                      </Label>
                       <Input
                         id="phone"
                         name="phone"
@@ -512,7 +513,9 @@ export default function AdminDashboard() {
                 <CardContent>
                   <form onSubmit={handleCreateSkill} className="space-y-4">
                     <div>
-                      <Label htmlFor="skillName" className="text-gray-300">Skill Name</Label>
+                      <Label htmlFor="skillName" className="text-gray-300">
+                        Skill Name
+                      </Label>
                       <Input
                         id="skillName"
                         name="skillName"
@@ -521,7 +524,9 @@ export default function AdminDashboard() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="skillPercentage" className="text-gray-300">Percentage (0-100)</Label>
+                      <Label htmlFor="skillPercentage" className="text-gray-300">
+                        Percentage (0-100)
+                      </Label>
                       <Input
                         id="skillPercentage"
                         name="skillPercentage"
@@ -533,7 +538,9 @@ export default function AdminDashboard() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="skillCategory" className="text-gray-300">Category</Label>
+                      <Label htmlFor="skillCategory" className="text-gray-300">
+                        Category
+                      </Label>
                       <select
                         id="skillCategory"
                         name="skillCategory"
@@ -562,17 +569,19 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {profileData.skills.map((skill) => (
-                      <div key={skill.id} className="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg">
+                    {profileData.skills.map(skill => (
+                      <div
+                        key={skill.id}
+                        className="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg"
+                      >
                         <div>
                           <h3 className="font-semibold text-white">{skill.name}</h3>
-                          <p className="text-gray-400">{skill.percentage}% - {skill.category === 'management' ? 'Manajemen SDM' : skill.category}</p>
+                          <p className="text-gray-400">
+                            {skill.percentage}% -{' '}
+                            {skill.category === 'management' ? 'Manajemen SDM' : skill.category}
+                          </p>
                         </div>
-                        <Button
-                          onClick={() => handleDeleteSkill(skill.id)}
-                          variant="destructive"
-                          size="sm"
-                        >
+                        <Button onClick={() => handleDeleteSkill(skill.id)} variant="destructive" size="sm">
                           Delete
                         </Button>
                       </div>
@@ -592,23 +601,33 @@ export default function AdminDashboard() {
                 <CardContent>
                   <form onSubmit={handleCreateEducation} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
-                      <Label htmlFor="institution" className="text-gray-300">Institution</Label>
+                      <Label htmlFor="institution" className="text-gray-300">
+                        Institution
+                      </Label>
                       <Input id="institution" name="institution" className="bg-gray-700 border-gray-600 text-white" required />
                     </div>
                     <div>
-                      <Label htmlFor="eduLocation" className="text-gray-300">Location</Label>
+                      <Label htmlFor="eduLocation" className="text-gray-300">
+                        Location
+                      </Label>
                       <Input id="eduLocation" name="eduLocation" className="bg-gray-700 border-gray-600 text-white" required />
                     </div>
                     <div>
-                      <Label htmlFor="startYear" className="text-gray-300">Start Year</Label>
+                      <Label htmlFor="startYear" className="text-gray-300">
+                        Start Year
+                      </Label>
                       <Input id="startYear" name="startYear" type="number" className="bg-gray-700 border-gray-600 text-white" required />
                     </div>
                     <div>
-                      <Label htmlFor="endYear" className="text-gray-300">End Year</Label>
+                      <Label htmlFor="endYear" className="text-gray-300">
+                        End Year
+                      </Label>
                       <Input id="endYear" name="endYear" type="number" className="bg-gray-700 border-gray-600 text-white" required />
                     </div>
                     <div className="md:col-span-2">
-                      <Button type="submit" className="bg-teal-600 hover:bg-teal-700">Add Education</Button>
+                      <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
+                        Add Education
+                      </Button>
                     </div>
                   </form>
                 </CardContent>
@@ -620,11 +639,13 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {profileData.education.map((edu) => (
+                    {profileData.education.map(edu => (
                       <div key={edu.id} className="p-4 bg-gray-700/30 rounded-lg flex items-center justify-between">
                         <div>
                           <h3 className="font-semibold text-white">{edu.institution}</h3>
-                          <p className="text-gray-400">{edu.location} • {edu.startYear} - {edu.endYear}</p>
+                          <p className="text-gray-400">
+                            {edu.location} • {edu.startYear} - {edu.endYear}
+                          </p>
                         </div>
                         <Button onClick={() => handleDeleteEducation(edu.id)} variant="destructive" size="sm">
                           Delete
@@ -646,27 +667,45 @@ export default function AdminDashboard() {
                 <CardContent>
                   <form onSubmit={handleCreateCertificate} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
-                      <Label htmlFor="certTitle" className="text-gray-300">Title</Label>
+                      <Label htmlFor="certTitle" className="text-gray-300">
+                        Title
+                      </Label>
                       <Input id="certTitle" name="certTitle" className="bg-gray-700 border-gray-600 text-white" required />
                     </div>
                     <div>
-                      <Label htmlFor="certIssuer" className="text-gray-300">Issuer</Label>
+                      <Label htmlFor="certIssuer" className="text-gray-300">
+                        Issuer
+                      </Label>
                       <Input id="certIssuer" name="certIssuer" className="bg-gray-700 border-gray-600 text-white" required />
                     </div>
                     <div>
-                      <Label htmlFor="certIssueDate" className="text-gray-300">Issue Date</Label>
-                      <Input id="certIssueDate" name="certIssueDate" placeholder="e.g. Oktober 2019" className="bg-gray-700 border-gray-600 text-white" required />
+                      <Label htmlFor="certIssueDate" className="text-gray-300">
+                        Issue Date
+                      </Label>
+                      <Input
+                        id="certIssueDate"
+                        name="certIssueDate"
+                        placeholder="e.g. Oktober 2019"
+                        className="bg-gray-700 border-gray-600 text-white"
+                        required
+                      />
                     </div>
                     <div className="md:col-span-2">
-                      <Label htmlFor="certImageUrl" className="text-gray-300">Image URL (optional)</Label>
+                      <Label htmlFor="certImageUrl" className="text-gray-300">
+                        Image URL (optional)
+                      </Label>
                       <Input id="certImageUrl" name="certImageUrl" className="bg-gray-700 border-gray-600 text-white" />
                     </div>
                     <div className="md:col-span-2">
-                      <Label htmlFor="certDescription" className="text-gray-300">Description (optional)</Label>
+                      <Label htmlFor="certDescription" className="text-gray-300">
+                        Description (optional)
+                      </Label>
                       <Textarea id="certDescription" name="certDescription" className="bg-gray-700 border-gray-600 text-white" />
                     </div>
                     <div className="md:col-span-2">
-                      <Button type="submit" className="bg-teal-600 hover:bg-teal-700">Add Certificate</Button>
+                      <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
+                        Add Certificate
+                      </Button>
                     </div>
                   </form>
                 </CardContent>
@@ -678,7 +717,7 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {profileData.certificates.map((cert) => (
+                    {profileData.certificates.map(cert => (
                       <div key={cert.id} className="p-4 bg-gray-700/30 rounded-lg flex items-center justify-between">
                         <div>
                           <h3 className="font-semibold text-white">{cert.title}</h3>
@@ -706,15 +745,21 @@ export default function AdminDashboard() {
                 <CardContent>
                   <form onSubmit={handleCreateTool} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="toolName" className="text-gray-300">Tool Name</Label>
+                      <Label htmlFor="toolName" className="text-gray-300">
+                        Tool Name
+                      </Label>
                       <Input id="toolName" name="toolName" className="bg-gray-700 border-gray-600 text-white" required />
                     </div>
                     <div>
-                      <Label htmlFor="toolIconUrl" className="text-gray-300">Icon URL (optional)</Label>
+                      <Label htmlFor="toolIconUrl" className="text-gray-300">
+                        Icon URL (optional)
+                      </Label>
                       <Input id="toolIconUrl" name="toolIconUrl" className="bg-gray-700 border-gray-600 text-white" />
                     </div>
                     <div className="md:col-span-2">
-                      <Button type="submit" className="bg-teal-600 hover:bg-teal-700">Add Tool</Button>
+                      <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
+                        Add Tool
+                      </Button>
                     </div>
                   </form>
                 </CardContent>
@@ -726,7 +771,7 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {profileData.tools.map((tool) => (
+                    {profileData.tools.map(tool => (
                       <div key={tool.id} className="p-4 bg-gray-700/30 rounded-lg flex items-center justify-between">
                         <div>
                           <h3 className="font-semibold text-white">{tool.name}</h3>
