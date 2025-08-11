@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogOut, User, Code, GraduationCap, Award, Wrench, Camera } from 'lucide-react';
+import { LogOut, User, Code, GraduationCap, Award, Wrench, Camera, Share2, FolderOpen } from 'lucide-react';
 import backend from '~backend/client';
 import type { ProfileData } from '~backend/profile/get_profile';
 
@@ -316,6 +316,72 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleCreateSocialMedia = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    try {
+      await backend.profile.createSocialMedia({
+        platform: fd.get('socialPlatform') as string,
+        url: fd.get('socialUrl') as string,
+        username: (fd.get('socialUsername') as string) || undefined
+      });
+      toast({ title: 'Success', description: 'Social media added' });
+      const data = await backend.profile.getProfile();
+      setProfileData(data);
+      e.currentTarget.reset();
+    } catch (err) {
+      console.error('Failed to add social media:', err);
+      toast({ title: 'Error', description: 'Failed to add social media', variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteSocialMedia = async (id: number) => {
+    try {
+      await backend.profile.deleteSocialMedia({ id });
+      toast({ title: 'Success', description: 'Social media deleted' });
+      const data = await backend.profile.getProfile();
+      setProfileData(data);
+    } catch (err) {
+      console.error('Failed to delete social media:', err);
+      toast({ title: 'Error', description: 'Failed to delete social media', variant: 'destructive' });
+    }
+  };
+
+  const handleCreateProject = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    try {
+      await backend.profile.createProject({
+        title: fd.get('projectTitle') as string,
+        description: fd.get('projectDescription') as string,
+        technologies: (fd.get('projectTechnologies') as string) || undefined,
+        demoUrl: (fd.get('projectDemoUrl') as string) || undefined,
+        githubUrl: (fd.get('projectGithubUrl') as string) || undefined,
+        imageUrl: (fd.get('projectImageUrl') as string) || undefined,
+        featured: (fd.get('projectFeatured') as string) === 'on'
+      });
+      toast({ title: 'Success', description: 'Project added' });
+      const data = await backend.profile.getProfile();
+      setProfileData(data);
+      e.currentTarget.reset();
+    } catch (err) {
+      console.error('Failed to add project:', err);
+      toast({ title: 'Error', description: 'Failed to add project', variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteProject = async (id: number) => {
+    try {
+      await backend.profile.deleteProject({ id });
+      toast({ title: 'Success', description: 'Project deleted' });
+      const data = await backend.profile.getProfile();
+      setProfileData(data);
+    } catch (err) {
+      console.error('Failed to delete project:', err);
+      toast({ title: 'Error', description: 'Failed to delete project', variant: 'destructive' });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -365,6 +431,14 @@ export default function AdminDashboard() {
             <TabsTrigger value="skills" className="data-[state=active]:bg-teal-600">
               <Code className="w-4 h-4 mr-2" />
               Skills
+            </TabsTrigger>
+            <TabsTrigger value="projects" className="data-[state=active]:bg-teal-600">
+              <FolderOpen className="w-4 h-4 mr-2" />
+              Projects
+            </TabsTrigger>
+            <TabsTrigger value="social" className="data-[state=active]:bg-teal-600">
+              <Share2 className="w-4 h-4 mr-2" />
+              Social Media
             </TabsTrigger>
             <TabsTrigger value="education" className="data-[state=active]:bg-teal-600">
               <GraduationCap className="w-4 h-4 mr-2" />
@@ -582,6 +656,171 @@ export default function AdminDashboard() {
                           </p>
                         </div>
                         <Button onClick={() => handleDeleteSkill(skill.id)} variant="destructive" size="sm">
+                          Delete
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="projects">
+            <div className="space-y-6">
+              <Card className="bg-gray-800/50 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white">Add New Project</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleCreateProject} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <Label htmlFor="projectTitle" className="text-gray-300">
+                        Project Title
+                      </Label>
+                      <Input id="projectTitle" name="projectTitle" className="bg-gray-700 border-gray-600 text-white" required />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label htmlFor="projectDescription" className="text-gray-300">
+                        Description
+                      </Label>
+                      <Textarea id="projectDescription" name="projectDescription" className="bg-gray-700 border-gray-600 text-white" required />
+                    </div>
+                    <div>
+                      <Label htmlFor="projectTechnologies" className="text-gray-300">
+                        Technologies (comma separated)
+                      </Label>
+                      <Input id="projectTechnologies" name="projectTechnologies" className="bg-gray-700 border-gray-600 text-white" placeholder="React, Node.js, MongoDB" />
+                    </div>
+                    <div>
+                      <Label htmlFor="projectImageUrl" className="text-gray-300">
+                        Image URL
+                      </Label>
+                      <Input id="projectImageUrl" name="projectImageUrl" className="bg-gray-700 border-gray-600 text-white" />
+                    </div>
+                    <div>
+                      <Label htmlFor="projectDemoUrl" className="text-gray-300">
+                        Demo URL
+                      </Label>
+                      <Input id="projectDemoUrl" name="projectDemoUrl" className="bg-gray-700 border-gray-600 text-white" />
+                    </div>
+                    <div>
+                      <Label htmlFor="projectGithubUrl" className="text-gray-300">
+                        GitHub URL
+                      </Label>
+                      <Input id="projectGithubUrl" name="projectGithubUrl" className="bg-gray-700 border-gray-600 text-white" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="projectFeatured"
+                          name="projectFeatured"
+                          className="rounded border-gray-600 bg-gray-700"
+                        />
+                        <Label htmlFor="projectFeatured" className="text-gray-300">
+                          Featured Project
+                        </Label>
+                      </div>
+                    </div>
+                    <div className="md:col-span-2">
+                      <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
+                        Add Project
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gray-800/50 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white">Projects</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {profileData.projects.map(project => (
+                      <div key={project.id} className="p-4 bg-gray-700/30 rounded-lg flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold text-white">{project.title}</h3>
+                          <p className="text-gray-400 text-sm">{project.description}</p>
+                          {project.technologies && <p className="text-teal-400 text-xs mt-1">{project.technologies}</p>}
+                          <p className="text-gray-500 text-xs mt-1">Featured: {project.featured ? 'Yes' : 'No'}</p>
+                        </div>
+                        <Button onClick={() => handleDeleteProject(project.id)} variant="destructive" size="sm">
+                          Delete
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="social">
+            <div className="space-y-6">
+              <Card className="bg-gray-800/50 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white">Add Social Media</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleCreateSocialMedia} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="socialPlatform" className="text-gray-300">
+                        Platform
+                      </Label>
+                      <select
+                        id="socialPlatform"
+                        name="socialPlatform"
+                        className="w-full bg-gray-700 border border-gray-600 text-white rounded-md px-3 py-2"
+                        required
+                      >
+                        <option value="Instagram">Instagram</option>
+                        <option value="LinkedIn">LinkedIn</option>
+                        <option value="GitHub">GitHub</option>
+                        <option value="Twitter">Twitter</option>
+                        <option value="Website">Website</option>
+                        <option value="YouTube">YouTube</option>
+                        <option value="Facebook">Facebook</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label htmlFor="socialUsername" className="text-gray-300">
+                        Username/Handle
+                      </Label>
+                      <Input id="socialUsername" name="socialUsername" className="bg-gray-700 border-gray-600 text-white" placeholder="@username" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label htmlFor="socialUrl" className="text-gray-300">
+                        URL
+                      </Label>
+                      <Input id="socialUrl" name="socialUrl" className="bg-gray-700 border-gray-600 text-white" required placeholder="https://..." />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
+                        Add Social Media
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gray-800/50 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white">Social Media Links</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {profileData.socialMedia.map(social => (
+                      <div key={social.id} className="p-4 bg-gray-700/30 rounded-lg flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold text-white">{social.platform}</h3>
+                          <p className="text-gray-400 text-sm">{social.username}</p>
+                          <a href={social.url} target="_blank" rel="noopener noreferrer" className="text-teal-400 text-xs hover:underline">
+                            {social.url}
+                          </a>
+                        </div>
+                        <Button onClick={() => handleDeleteSocialMedia(social.id)} variant="destructive" size="sm">
                           Delete
                         </Button>
                       </div>

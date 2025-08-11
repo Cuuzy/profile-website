@@ -41,12 +41,32 @@ export interface Tool {
   iconUrl?: string;
 }
 
+export interface SocialMedia {
+  id: number;
+  platform: string;
+  url: string;
+  username?: string;
+}
+
+export interface Project {
+  id: number;
+  title: string;
+  description: string;
+  technologies?: string;
+  demoUrl?: string;
+  githubUrl?: string;
+  imageUrl?: string;
+  featured: boolean;
+}
+
 export interface ProfileData {
   profile: Profile;
   skills: Skill[];
   education: Education[];
   certificates: Certificate[];
   tools: Tool[];
+  socialMedia: SocialMedia[];
+  projects: Project[];
 }
 
 // Gets the complete profile data
@@ -88,12 +108,27 @@ export const getProfile = api<void, ProfileData>(
       ORDER BY name
     `;
 
+    const socialMedia = await profileDB.queryAll<SocialMedia>`
+      SELECT id, platform, url, username
+      FROM social_media 
+      ORDER BY id
+    `;
+
+    const projects = await profileDB.queryAll<Project>`
+      SELECT id, title, description, technologies, demo_url as "demoUrl", github_url as "githubUrl", image_url as "imageUrl", featured
+      FROM projects 
+      WHERE featured = true
+      ORDER BY created_at DESC
+    `;
+
     return {
       profile,
       skills,
       education,
       certificates,
       tools,
+      socialMedia,
+      projects,
     };
   }
 );

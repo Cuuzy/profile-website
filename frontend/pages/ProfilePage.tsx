@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Mail, Phone, MapPin, Code, Award, GraduationCap, Wrench, Star } from 'lucide-react';
+import { Mail, Phone, MapPin, Code, Award, GraduationCap, Wrench, Instagram, Linkedin, Github, Twitter, Globe, Download } from 'lucide-react';
 import backend from '~backend/client';
 import type { ProfileData } from '~backend/profile/get_profile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 export default function ProfilePage() {
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
@@ -61,16 +62,6 @@ export default function ProfilePage() {
             </Badge>
           </div>
         </div>
-        <div className="flex">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              className={`w-3 h-3 ${
-                i < Math.floor(skill.percentage / 20) ? 'text-yellow-400 fill-current' : 'text-gray-600'
-              }`}
-            />
-          ))}
-        </div>
       </div>
 
       <div className="relative">
@@ -95,6 +86,40 @@ export default function ProfilePage() {
     </div>
   );
 
+  const getSocialIcon = (platform: string) => {
+    switch (platform.toLowerCase()) {
+      case 'instagram':
+        return <Instagram className="w-5 h-5" />;
+      case 'linkedin':
+        return <Linkedin className="w-5 h-5" />;
+      case 'github':
+        return <Github className="w-5 h-5" />;
+      case 'twitter':
+        return <Twitter className="w-5 h-5" />;
+      case 'website':
+        return <Globe className="w-5 h-5" />;
+      default:
+        return <Globe className="w-5 h-5" />;
+    }
+  };
+
+  const getSocialColor = (platform: string) => {
+    switch (platform.toLowerCase()) {
+      case 'instagram':
+        return 'from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600';
+      case 'linkedin':
+        return 'from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800';
+      case 'github':
+        return 'from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900';
+      case 'twitter':
+        return 'from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600';
+      case 'website':
+        return 'from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600';
+      default:
+        return 'from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800';
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -111,7 +136,7 @@ export default function ProfilePage() {
     );
   }
 
-  const { profile, skills, education, certificates, tools } = profileData;
+  const { profile, skills, education, certificates, tools, socialMedia, projects } = profileData;
 
   // Separate skills by category
   const generalSkills = skills.filter(s => s.category !== 'management');
@@ -149,6 +174,17 @@ export default function ProfilePage() {
                     <h1 className="text-2xl font-bold text-white mb-1">{profile.name}</h1>
                     <p className="text-teal-400 font-medium">{profile.title}</p>
                   </div>
+
+                  {/* Download CV Button */}
+                  <div className="mt-4">
+                    <Button 
+                      className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white px-6 py-2 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+                      onClick={() => window.open('/api/profile/cv', '_blank')}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download CV
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="space-y-4 mb-8">
@@ -165,6 +201,28 @@ export default function ProfilePage() {
                     <span>{profile.phone}</span>
                   </div>
                 </div>
+
+                {/* Social Media Links */}
+                {socialMedia && socialMedia.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-white mb-4">Connect With Me</h3>
+                    <div className="flex flex-wrap gap-3">
+                      {socialMedia.map((social, index) => (
+                        <a
+                          key={social.id}
+                          href={social.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r ${getSocialColor(social.platform)} text-white transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl`}
+                          style={{ animationDelay: `${index * 100}ms` }}
+                        >
+                          {getSocialIcon(social.platform)}
+                          <span className="text-sm font-medium">{social.platform}</span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Technical Skills */}
                 {generalSkills.length > 0 && (
@@ -205,6 +263,76 @@ export default function ProfilePage() {
 
           {/* Right Column - Details */}
           <div className="lg:col-span-2 space-y-8">
+            {/* Portfolio Projects */}
+            {projects && projects.length > 0 && (
+              <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-white">
+                    <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg">
+                      <Code className="w-5 h-5 text-white" />
+                    </div>
+                    Featured Projects
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {projects.map((project, index) => (
+                      <div
+                        key={project.id}
+                        className="bg-gradient-to-r from-gray-700/30 to-gray-600/20 rounded-xl p-6 border border-gray-600/30 hover:border-indigo-500/50 transition-all duration-300 hover:scale-[1.02] group"
+                        style={{ animationDelay: `${index * 200}ms` }}
+                      >
+                        {project.imageUrl && (
+                          <div className="mb-4 rounded-lg overflow-hidden">
+                            <img
+                              src={project.imageUrl}
+                              alt={project.title}
+                              className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                        )}
+                        <h3 className="font-semibold text-white mb-2 text-lg">{project.title}</h3>
+                        <p className="text-gray-400 text-sm mb-3 leading-relaxed">{project.description}</p>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {project.technologies?.split(',').map((tech, techIndex) => (
+                            <Badge
+                              key={techIndex}
+                              variant="secondary"
+                              className="bg-indigo-600/20 text-indigo-300 border border-indigo-600/30 text-xs"
+                            >
+                              {tech.trim()}
+                            </Badge>
+                          ))}
+                        </div>
+                        <div className="flex gap-2">
+                          {project.demoUrl && (
+                            <Button
+                              size="sm"
+                              className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-xs"
+                              onClick={() => window.open(project.demoUrl, '_blank')}
+                            >
+                              Live Demo
+                            </Button>
+                          )}
+                          {project.githubUrl && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-gray-600 text-gray-300 hover:bg-gray-700 text-xs"
+                              onClick={() => window.open(project.githubUrl, '_blank')}
+                            >
+                              <Github className="w-3 h-3 mr-1" />
+                              Code
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* My Tools */}
             <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
               <CardHeader>
